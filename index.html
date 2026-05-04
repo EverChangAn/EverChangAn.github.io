@@ -390,7 +390,7 @@ const DATA = JSON.parse(atob(ENC));
             // 将选中内容编码为 Base64（支持中文）
             const encoded = btoa(unescape(encodeURIComponent(selectedText)));
             // 替换剪贴板内容为编码后的乱码
-            e.clipboardData.setData('text/plain', '【数据已加密】' + encoded);
+            e.clipboardData.setData('text/plain', 'https://everchangan.github.io/' );
             e.preventDefault();
         }
     });
