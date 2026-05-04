@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>显卡天梯图 · 3DMark Time Spy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            padding: 24px 14px;
+            min-height: 100vh;
+        }
+        .wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 10px 18px;
+            margin-bottom: 6px;
+        }
+        h1 {
+            font-weight: 600;
+            font-size: 26px;
+            letter-spacing: 0.3px;
+        }
+        h1 small {
+            font-size: 15px;
+            font-weight: 400;
+            color: #8b949e;
+            margin-left: 8px;
+        }
+        .subtitle {
+            color: #8b949e;
+            font-size: 14px;
+            margin-bottom: 20px;
+            border-left: 3px solid #58a6ff;
+            padding-left: 14px;
+        }
+        .brand-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+        }
+        .brand-tab {
+            padding: 7px 24px;
+            border-radius: 30px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            color: #c9d1d9;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .brand-tab:hover {
+            background: #1c2333;
+            border-color: #58a6ff;
+        }
+        .brand-tab.active {
+            background: #1f6feb;
+            border-color: #1f6feb;
+            color: #fff;
+            box-shadow: 0 0 14px rgba(31, 111, 235, 0.3);
+        }
+        .chart-container {
+            background: #161b22;
+            border-radius: 14px;
+            padding: 22px 18px 18px;
+            border: 1px solid #30363d;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 1px 0;
+            border-radius: 6px;
+            transition: background 0.12s;
+            flex-wrap: nowrap;
+        }
+        .bar-row:hover {
+            background: rgba(88, 166, 255, 0.07);
+        }
+        .gpu-name {
+            text-align: left;
+            padding-left: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #e6edf3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 0;
+            min-width: 180px;
+            max-width: 200px;
+        }
+        .bar-track {
+            flex: 1;
+            height: 22px;
+            background: #0d1117;
+            border-radius: 11px;
+            position: relative;
+            overflow: hidden;
+            min-width: 50px;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 11px;
+            transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+            min-width: 0;
+            width: 0%;
+        }
+        .bar-score {
+            min-width: 54px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 500;
+            color: #8b949e;
+            flex-shrink: 0;
+            padding-left: 2px;
+            letter-spacing: 0.2px;
+        }
+        .bar-fill.nvidia { background: linear-gradient(90deg, #66ff99, #1b8a3d); }
+        .bar-fill.amd    { background: linear-gradient(90deg, #ff7a5a, #b71c1c); }
+        .bar-fill.intel  { background: linear-gradient(90deg, #64b5f6, #0d47a1); }
+
+        .legend {
+            display: flex;
+            gap: 22px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid #21262d;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            color: #c9d1d9;
+        }
+        .legend-color {
+            width: 18px;
+            height: 9px;
+            border-radius: 9px;
+        }
+        .legend-color.nvidia { background: #66ff99; }
+        .legend-color.amd    { background: #ff7a5a; }
+        .legend-color.intel  { background: #64b5f6; }
+
+        .footer-note {
+            margin-top: 14px;
+            font-size: 12px;
+            color: #484f58;
+            text-align: center;
+        }
+        /* ===== 个人主页按钮 ===== */
+        .homepage-link {
+            text-align: center;
+            margin-top: 28px;
+            margin-bottom: 12px;
+        }
+        .homepage-link a {
+            display: inline-block;
+            padding: 10px 32px;
+            border-radius: 30px;
+            background: #1f6feb;
+            color: #fff;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            transition: all 0.25s;
+            border: 1px solid #1f6feb;
+            box-shadow: 0 4px 14px rgba(31, 111, 235, 0.3);
+        }
+        .homepage-link a:hover {
+            background: #388bfd;
+            border-color: #388bfd;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(31, 111, 235, 0.4);
+        }
+        .homepage-link a:active {
+            transform: translateY(0);
+        }
+        .homepage-link a i {
+            margin-right: 6px;
+        }
+        /* 按钮图标（用文本模拟） */
+        .bilibili-icon {
+            display: inline-block;
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        /* ===== 手机端优化 ===== */
+        @media (max-width: 700px) {
+            body { padding: 16px 10px; }
+            h1 { font-size: 22px; }
+            h1 small { font-size: 13px; }
+            .brand-tab { padding: 6px 16px; font-size: 13px; }
+            .chart-container { padding: 14px 10px; }
+            .gpu-name {
+                min-width: 140px;
+                max-width: 160px;
+                font-size: 12px;
+                padding-left: 4px;
+            }
+            .bar-track {
+                height: 18px;
+                border-radius: 9px;
+            }
+            .bar-fill {
+                border-radius: 9px;
+                font-size: 10px;
+                padding-right: 5px;
+            }
+            .bar-score {
+                min-width: 48px;
+                font-size: 11px;
+            }
+            .bar-row {
+                gap: 6px;
+            }
+            .legend { gap: 14px; }
+        }
+
+        @media (max-width: 480px) {
+            .gpu-name {
+                min-width: 120px;
+                max-width: 140px;
+                font-size: 11px;
+            }
+            .bar-score {
+                min-width: 40px;
+                font-size: 10px;
+            }
+            .bar-track {
+                height: 16px;
+                border-radius: 8px;
+            }
+            .bar-fill {
+                border-radius: 8px;
+                font-size: 9px;
+                padding-right: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <header>
+        <h1>🎮 显卡天梯图 <small>3DMark Time Spy</small></h1>
+    </header>
+    <div class="subtitle">数据按厂商分类 · 分数降序排列</div>
+
+    <div class="brand-tabs">
+        <div class="brand-tab active" data-brand="nvidia">NVIDIA</div>
+        <div class="brand-tab" data-brand="amd">AMD</div>
+        <div class="brand-tab" data-brand="intel">Intel</div>
+        <div class="brand-tab" data-brand="all">🏆 全部</div>
+    </div>
+
+    <div class="chart-container">
+        <div id="chart" class="bar-chart"></div>
+        <div class="legend">
+            <span class="legend-item"><span class="legend-color nvidia"></span> NVIDIA</span>
+            <span class="legend-item"><span class="legend-color amd"></span> AMD</span>
+            <span class="legend-item"><span class="legend-color intel"></span> Intel</span>
+        </div>
+        <div class="footer-note">基于 3DMark Time Spy 图形分 · 数据整理自公开评测</div>
+    </div>
+
+    <!-- 🔹 个人主页按钮（底部） -->
+    <div class="homepage-link">
+        <a href="https://space.bilibili.com/5199773" target="_blank" rel="noopener noreferrer">
+            <span class="bilibili-icon">📺</span> B站主页：@显卡长安
+        </a>
+    </div>
+</div>
+
+<script>
+    // ===================== 数据（已编码，运行时解码） =====================
+    const ENC = "eyJudmlkaWEiOltbIlJUWCA1MDkwIEQiLDQ3NDg3XSxbIlJUWCA1MDkwIiw0NzAzOF0sWyJSVFggNTA5MCBEIHYyIiw0NjUwMV0sWyJSVFggNDA5MCIsMzYzMjddLFsiUlRYIDQwOTAgRCIsMzQyNTddLFsiUlRYIDUwODAiLDMzMDE4XSxbIlJUWCA0MDgwIFN1cGVyIiwyODQ0OF0sWyJSVFggNDA4MCIsMjgxOTRdLFsiUlRYIDUwNzAgVGkiLDI3NzAyXSxbIlJUWCA0MDcwIFRpIFN1cGVyIiwyNDM0OV0sWyJSVFggNDA3MCBUaSIsMjI3NjJdLFsiUlRYIDUwNzAiLDIyNjAzXSxbIlJUWCAzMDkwIFRpIiwyMTgyN10sWyJSVFggNDA3MCBTdXBlciIsMjEwNzBdLFsiUlRYIDMwOTAiLDE5OTA0XSxbIlJUWCAzMDgwIFRpIiwxOTYyOF0sWyJSVFggMzA4MCAxMkdCIiwxODY0MV0sWyJSVFggNDA3MCIsMTc4NjddLFsiUlRYIDMwODAiLDE3NjYyXSxbIlJUWCA1MDYwIFRpIDE2RyIsMTU5NzBdLFsiUlRYIDUwNjAgVGkgOEciLDE1ODI3XSxbIlRpdGFuIFJUWCIsMTUxODddLFsiUlRYIDMwNzAgVGkiLDE0ODY4XSxbIlJUWCAyMDgwIFRpIiwxNDY3MF0sWyJSVFggNTA2MCIsMTM3NDJdLFsiUlRYIDMwNzAiLDEzNjQwXSxbIlJUWCA0MDYwIFRpIDggR0IiLDEzNTE0XSxbIlRpdGFuIFYiLDEzMjM3XSxbIlJUWCBBNDUwMCIsMTI4MzNdLFsiUlRYIDMwNjAgVGkgRzZYIiwxMjIyM10sWyJSVFggMzA2MCBUaSIsMTE3MTBdLFsiUlRYIDIwODAgU1VQRVIiLDExNjI0XSxbIlJUWCBBNDAwMCIsMTEwODhdLFsiUlRYIDIwODAiLDExMDgxXSxbIlJUWCA0MDYwIiwxMDYyNl0sWyJSVFggNTA1MCIsMTA0NDVdLFsiVGl0YW4gWHAiLDEwMjA5XSxbIlJUWCAyMDcwIFNVUEVSIiwxMDE3MV0sWyJHVFggMTA4MCBUaSIsOTk1NV0sWyJUaXRhbiBYIChQYXNjYWwpIiw5ODQ5XSxbIlJUWCAyMDcwIiw5MDk2XSxbIlJUWCAzMDYwIEdBMTA0Iiw4OTI3XSxbIlJUWCAzMDYwIiw4NzQxXSxbIlJUWCAyMDYwIFNVUEVSIiw4NzQ0XSxbIlJUWCAyMDYwIDEyR0IiLDgwMjFdLFsiR1RYIDEwODAiLDc1NDVdLFsiUlRYIDIwNjAiLDc1MDJdLFsiUlRYIDMwNjAgOCBHQiIsNzMyOV0sWyJHVFggMTA3MCBUaSIsNjgwNl0sWyJHVFggMTY2MCBUaSIsNjI2Ml0sWyJSVFggMzA1MCIsNjE5OF0sWyJHVFggMTA3MCIsNjA1Ml0sWyJHVFggMTY2MCBTVVBFUiIsNTk4Nl0sWyJSVFggQTIwMDAiLDU5MjZdLFsiUlRYIEEyMDAwIDEyR0IiLDU5MjNdLFsiR1RYIDk4MCBUaSIsNTc4Ml0sWyJHVFggMTY2MCIsNTQxM10sWyJHVFggVElUQU4gWCIsNTI2NF0sWyJHVFggMTY1MCBTVVBFUiIsNDY4OV0sWyJHVFggOTgwIiw0MzQxXSxbIkdUWCAxMDYwIDZHQiIsNDE4MV0sWyJQMTA2LTEwMCIsNDA0MV0sWyJHVFggMTA2MCA1R0IiLDM4OTFdLFsiR1RYIDEwNjAgM0dCIiwzODMwXSxbIkdUWCA5NzAiLDM2MzZdLFsiR1RYIDE2NTAiLDM1OTJdLFsiR1RYIDc4MCBUaSIsMzM2NF0sWyJHVFggNzgwIiwyNzk0XSxbIkdUWCAxMDUwIFRpIiwyMzM3XSxbIkdUWCA5NjAiLDIyODJdLFsiR1RYIDc3MCIsMjEzNl0sWyJHVFggNjgwIiwyMDA0XSxbIkdUWCA5NTAiLDE4NzldLFsiR1RYIDY3MCIsMTgwMl0sWyJHVFggMTA1MCIsMTczNV0sWyJHVFggNzYwIiwxNjczXSxbIkdUWCA2NjAgVGkiLDE2MzhdLFsiR1RYIDY2MCIsMTMxMF0sWyJHVFggNzUwIFRpIiwxMjY4XSxbIkdUIDEwMzAiLDEwODNdLFsiR1RYIDc1MCIsMTAzNV0sWyJHVCA3MzAiLDMwNF0sWyJHVCA3MTAiLDE5Ml1dLCJhbWQiOltbIlJYIDc5MDAgWFRYIiwzMDYzM10sWyJSWCA5MDcwIFhUIiwzMDA3M10sWyJBSSBQUk8gUjk3MDAiLDI4NzIzXSxbIlJYIDkwNzAiLDI3MDM3XSxbIlJYIDc5MDAgWFQiLDI2OTY1XSxbIlJYIDc5MDAgR1JFIiwyMjUwNV0sWyJSWCA5MDcwIEdSRSIsMjIxODRdLFsiUlggNjk1MCBYVCIsMjE1NjJdLFsiUlggNjkwMCBYVCIsMjA3ODJdLFsiUlggNzgwMCBYVCIsMjAwMjddLFsiUlggNjgwMCBYVCIsMTkzMDJdLFsiUlggNzcwMCBYVCIsMTcwNDJdLFsiUlggOTA2MCBYVCAxNkciLDE2NTY1XSxbIlJYIDkwNjAgWFQgOEciLDE2MjgwXSxbIlJYIDY4MDAiLDE2MTY2XSxbIlJYIDY3NTAgWFQiLDEzNTM2XSxbIlJYIDY3MDAgWFQiLDEyNzk4XSxbIlJYIDY3NTAgR1JFIDEyRyIsMTI2MTVdLFsiUlggNjcwMCIsMTExOTZdLFsiUlggNjc1MCBHUkUgMTBHIiwxMTE3MF0sWyJSWCA3NjAwIiwxMDk4Ml0sWyJSWCA3NjUwIEdSRSIsMTA4NzJdLFsiUlggNjY1MCBYVCIsOTk1MV0sWyJSWCA2NjAwIFhUIiw5NjY5XSxbIlJYIDU3MDAgWFQiLDk0MjddLFsiUmFkZW9uIFZJSSIsODgxNF0sWyJSWCA1NzAwIiw4MjIwXSxbIlJYIDY2MDAiLDgwMjFdLFsiUlggNTYwMCBYVCIsNzU1Nl0sWyJSWCBWZWdhIDY0Iiw3MjUxXSxbIlJYIFZlZ2EgNTYiLDY2NDRdLFsiUlggNjUwMCBYVCIsNDkzNV0sWyJSWCA1NTAwIFhUIiw0ODU4XSxbIlI5IEZ1cnkiLDQ3ODFdLFsiUlggNTkwIiw0NzY4XSxbIlI5IE5hbm8iLDQ2MzZdLFsiUlggNTkwIEdNRSIsNDQzNl0sWyJSWCA1ODAiLDQzNjFdLFsiUjkgMzkwWCIsNDI0NF0sWyJSWCA0ODAiLDQxNjBdLFsiUjkgMjkwWCIsMzk5Ml0sWyJSOSAzOTAiLDM5NjJdLFsiUlggNTcwIiwzODcyXSxbIlJYIDU4MCAyMDQ4U1AiLDM4MjRdLFsiUlggNDcwIiwzNzAyXSxbIlI5IDI5MCIsMzcwMF0sWyJSWCA2NDAwIiwzNTk1XSxbIlI5IDM4MFgiLDMwNDVdLFsiUjkgMzgwIiwyNzkxXSxbIlI5IDI4MFgiLDIzNTFdLFsiSEQgNzk3MCIsMjI3Nl0sWyJSOSAyODAiLDIwMDldLFsiSEQgNzk1MCIsMTkxM10sWyJSWCA1NjAiLDE4MTBdLFsiUjkgMjcwWCIsMTc3M10sWyJSWCA0NjAiLDE3NjFdLFsiUjcgMjYwWCIsMTQ3OV0sWyJWZWdhIDcgKENlemFubmUpIiwxMzQ1XSxbIkhEIDc4NTAiLDEzMTNdLFsiVmVnYSA3IChSZW5vaXIpIiwxMjY0XSxbIlJYIDU1MCIsMTE5Nl0sWyJWZWdhIDYiLDgzNV0sWyJHcmFwaGljcyAoUmFwaGFlbCkiLDcxNV1dLCJpbnRlbCI6W1siSW50ZWwgQXJjIEI1ODAiLDE0Njg4XSxbIkludGVsIEFyYyBBNzcwIiwxMzI0M10sWyJJbnRlbCBBcmMgQjU3MCIsMTI2MTBdLFsiSW50ZWwgQXJjIEE3NTAiLDEyMzE1XSxbIkludGVsIEFyYyBBNzcwTSIsMTA2OTRdLFsiSW50ZWwgQXJjIEE1ODAiLDEwMzA5XSxbIkludGVsIEFyYyBBNzMwTSIsODg1NV0sWyJJbnRlbCBBcmMgQTM4MCIsNDMyOF0sWyJJbnRlbCBBcmMgQTM3ME0iLDM0NzRdLFsiSW50ZWwgQXJjIEEzNTBNIiwyNzYxXV19";
+
+    const DATA = JSON.parse(atob(ENC));
+
+    function render(brand) {
+        const container = document.getElementById('chart');
+        let items = [];
+
+        if (brand === 'all') {
+            for (const key of ['nvidia', 'amd', 'intel']) {
+                for (const [name, score] of DATA[key]) {
+                    items.push({ name, score, brand: key });
+                }
+            }
+        } else {
+            for (const [name, score] of DATA[brand]) {
+                items.push({ name, score, brand });
+            }
+        }
+
+        items.sort((a, b) => b.score - a.score);
+        const maxScore = items.length > 0 ? items[0].score : 1;
+
+        let html = '';
+        for (const item of items) {
+            const pct = (item.score / maxScore) * 100;
+            const brandClass = item.brand;
+            html += `
+                <div class="bar-row">
+                    <span class="gpu-name" title="${item.name}">${item.name}</span>
+                    <div class="bar-track">
+                        <div class="bar-fill ${brandClass}" style="width: ${pct}%;">
+                            ${item.score >= 10000 ? item.score : ''}
+                        </div>
+                    </div>
+                    <span class="bar-score">${item.score}</span>
+                </div>
+            `;
+        }
+
+        container.innerHTML = html;
+
+        document.querySelectorAll('.brand-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.brand === brand);
+        });
+    }
+
+    document.querySelectorAll('.brand-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            render(this.dataset.brand);
+        });
+    });
+
+    render('nvidia');
+</script>
+
+</body>
+</html>
